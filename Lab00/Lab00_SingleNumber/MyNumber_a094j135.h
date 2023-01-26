@@ -1,3 +1,10 @@
+#ifndef __MYNUMBER_H__
+#define __MYNUMBER_H__
+
+#include <algorithm>
+#include <iostream>
+using namespace std;
+
 template <typename DataType>
 class MyNumber
 {
@@ -59,3 +66,5 @@ private:
     /* data */
     DataType *num;
 };
+
+#endif // __MYVECTOR_H__
