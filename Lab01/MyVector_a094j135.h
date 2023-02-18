@@ -7,41 +7,41 @@
 template <typename DataType>
 class MyVector
 {
-  private:
+private:
     /* data */
-    size_t theSize;                         // the number of data elements the vector is currently holding
-    size_t theCapacity;                     // maximum data elements the vector can hold
-    DataType *data;                         // address of the data storage
+    size_t theSize;         // the number of data elements the vector is currently holding
+    size_t theCapacity;     // maximum data elements the vector can hold
+    DataType *data;         // address of the data storage
 
-  public:
-    
-    static const size_t SPARE_CAPACITY = 16;   // initial capacity of the vector
+public:
+    static const size_t SPARE_CAPACITY = 16; // initial capacity of the vector
 
     // default constructor
-    explicit MyVector(size_t initSize = 0) : 
-        theSize{initSize},
-        theCapacity{initSize + SPARE_CAPACITY}
+    explicit MyVector(size_t initSize = 0) : theSize{initSize},
+                                             theCapacity{initSize + SPARE_CAPACITY}
     {
         // code begins
-        data = new DataType[theCapacity];   
+        data = new DataType[theCapacity];
         // code ends
     }
 
     // copy constructor
-    MyVector(const MyVector & rhs) : 
-        theSize{rhs.theSize},
-        theCapacity{rhs.theCapacity}
+    MyVector(const MyVector &rhs) : theSize{rhs.theSize},
+                                    theCapacity{rhs.theCapacity}
     {
         // code begins
-        std::copy(rhs.data, rhs.data + rhs.theSize, data);
+        data = new DataType[theCapacity];
+        for (size_t i = 0; i < theSize; i++)
+        {
+            data[i] = rhs.data[i];
+        }
         // code ends
     }
 
     // move constructor
-    MyVector(MyVector&& rhs):
-        theSize{rhs.theSize},
-        theCapacity{rhs.theCapacity},
-        data{rhs.data}
+    MyVector(MyVector &&rhs) : theSize{rhs.theSize},
+                               theCapacity{rhs.theCapacity},
+                               data{rhs.data}
     {
         // code begins
         rhs.data = nullptr;
@@ -51,9 +51,8 @@ class MyVector
     }
 
     // copy constructor from STL vector implementation
-    MyVector(const std::vector<DataType> & rhs) :
-        theSize{rhs.size()},
-        theCapacity{rhs.size() + SPARE_CAPACITY}
+    MyVector(const std::vector<DataType> &rhs) : theSize{rhs.size()},
+                                                 theCapacity{rhs.size() + SPARE_CAPACITY}
     {
         // code begins
         data = new DataType[theCapacity];
@@ -61,34 +60,49 @@ class MyVector
         {
             data[i] = rhs[i];
         }
-        // code ends 
+        // code ends
     }
 
     // destructor
-    ~MyVector(){
+    ~MyVector()
+    {
         // code begins
         delete[] data;
         // code ends
     };
 
     // copy assignment
-    MyVector & operator= (const MyVector& rhs)
+    MyVector &operator=(const MyVector &rhs)
     {
         // code begins
-        MyVector copy = rhs;
-        std::swap(*this, copy);
+        if (this != &rhs)
+        {
+            theSize = rhs.theSize;
+            theCapacity = rhs.theCapacity;
+            delete[] data;
+            data = new DataType[theCapacity];
+            for (size_t i = 0; i < theSize; i++)
+            {
+                data[i] = rhs.data[i];
+            }
+        }
         return *this;
         // code ends
     }
 
     // move assignment
-    MyVector & operator= (MyVector && rhs)
+    MyVector &operator=(MyVector &&rhs)
     {
         // code begins
-        std::swap(theSize, rhs.theSize);
-        std::swap(theCapacity, rhs.theCapacity);
-        std::swap(data, rhs.data);
-        return *this;
+        if (this != &rhs)
+        {
+            theSize = rhs.theSize;
+            theCapacity = rhs.theCapacity;
+            delete[] data;
+            data = rhs.data;
+            rhs.data = nullptr;
+            rhs.theSize, rhs.theCapacity = 0;
+        }
         // code ends
     }
 
@@ -96,8 +110,10 @@ class MyVector
     void resize(size_t newSize)
     {
         // code begins
-        reserve(newSize);
-        theSize = newSize;
+        if (newSize > theCapacity)
+        {
+            reserve(newSize * 2);
+        }
         // code ends
     }
 
@@ -105,29 +121,31 @@ class MyVector
     void reserve(size_t newCapacity)
     {
         // code begins
-        if (newCapacity < theCapacity)
+        if (newCapacity < theSize)
         {
-            DataType *newData = new DataType[newCapacity];
-            for (size_t i = 0; i < theSize; i++)
-            {
-                newData[i] = data[i];
-            }
-            delete[] data;
-            data = newData;
-            theCapacity = newCapacity;
+            return;
         }
-        // code ends       
+
+        DataType *newArray = new DataType[newCapacity];
+        for (size_t i = 0; i < theSize; i++)
+        {
+            newArray[i] = std::move(data[i]);
+        }
+        std::swap(data, newArray);
+        delete[] newArray;
+        theCapacity = newCapacity;
+        // code ends
     }
 
     // data access operator (without bound checking)
-    DataType & operator[] (size_t index)
+    DataType &operator[](size_t index)
     {
         // code begins
         return data[index];
         // code ends
     }
 
-    const DataType & operator[](size_t index) const
+    const DataType &operator[](size_t index) const
     {
         // code begins
         return data[index];
@@ -138,12 +156,12 @@ class MyVector
     bool empty() const
     {
         // code begins
-        return theSize == 0;
+        return size() == 0;
         // code ends
     }
 
     // returns the size of the vector
-    size_t size() const 
+    size_t size() const
     {
         // code begins
         return theSize;
@@ -151,7 +169,7 @@ class MyVector
     }
 
     // returns the capacity of the vector
-    size_t capacity() const 
+    size_t capacity() const
     {
         // code begins
         return theCapacity;
@@ -159,7 +177,7 @@ class MyVector
     }
 
     // insert an data element to the end of the vector
-    void push_back(const DataType & x)
+    void push_back(const DataType &x)
     {
         // code begins
         if (theSize == theCapacity)
@@ -167,11 +185,10 @@ class MyVector
             reserve(2 * theCapacity + 1);
         }
         data[theSize++] = x;
-
         // code ends
     }
 
-    void push_back(DataType && x)
+    void push_back(DataType &&x)
     {
         // code begins
         if (theSize == theCapacity)
@@ -183,13 +200,14 @@ class MyVector
     }
 
     // append a vector as indicated by the parameter to the current vector
-    MyVector<DataType>& append(MyVector<DataType> && rhs)
+    MyVector<DataType> &append(MyVector<DataType> &&rhs)
     {
         // code begins
         if (theSize + rhs.theSize > theCapacity)
         {
             reserve(theSize + rhs.theSize);
         }
+
         for (size_t i = 0; i < rhs.theSize; i++)
         {
             data[theSize + i] = std::move(rhs.data[i]);
@@ -208,7 +226,7 @@ class MyVector
     }
 
     // returns the last data elemtn from the array
-    const DataType& back() const 
+    const DataType &back() const
     {
         // code begins
         return data[theSize - 1];
@@ -217,8 +235,8 @@ class MyVector
 
     // iterator implementation
 
-    typedef DataType* iterator;
-    typedef const DataType* const_iterator;
+    typedef DataType *iterator;
+    typedef const DataType *const_iterator;
 
     iterator begin()
     {
@@ -241,14 +259,11 @@ class MyVector
         // code ends
     }
 
-    const_iterator end() const 
+    const_iterator end() const
     {
         // code begins
         return &data[theSize];
         // code ends
     }
-
 };
-
-
 #endif // __MYVECTOR_H__
