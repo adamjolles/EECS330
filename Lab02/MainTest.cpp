@@ -3,20 +3,20 @@
 #include <fstream>
 #include <string>
 
-#include "MyLinkedList.h"
+#include "MyLinkedList_a094j135.h"
 
 using namespace std;
 
-void readInstances(const string& line_data, vector<string>& store_data)
+void readInstances(const string &line_data, vector<string> &store_data)
 {
-    int pos = 0; 
+    int pos = 0;
     int front = 0;
-    while(front < line_data.size())
+    while (front < line_data.size())
     {
-        if(line_data[front] ==' ')
+        if (line_data[front] == ' ')
         {
-            store_data.push_back(line_data.substr(pos,front-pos));
-            pos=front+1;
+            store_data.push_back(line_data.substr(pos, front - pos));
+            pos = front + 1;
         }
         front++;
     }

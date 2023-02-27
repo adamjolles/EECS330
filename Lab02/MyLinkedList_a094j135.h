@@ -10,9 +10,9 @@ class MyLinkedList
 private:
     struct Node
     {
-        DataType data;
         Node *prev;
         Node *next;
+        DataType data;
 
         Node(const DataType &d = DataType{}, Node *p = nullptr, Node *n = nullptr) : data{d},
                                                                                      prev{p},
@@ -45,6 +45,7 @@ private:
     }
 
 public:
+
     // define the const_iterator class
     class const_iterator
     {
@@ -82,7 +83,10 @@ public:
         const_iterator &operator++()
         {
             // code begins
-            current = current->next;
+            if (current != nullptr)
+            {
+                current = current->next;
+            }
             return *this;
             // code ends
         }
@@ -92,9 +96,9 @@ public:
         const_iterator operator++(int)
         {
             // code begins
-            const_iterator old = *this;
+            const_iterator tmp = *this;
             ++(*this);
-            return old;
+            return tmp;
             // code ends
         }
 
@@ -105,7 +109,6 @@ public:
             // code begins
             current = current->prev;
             return *this;
-
             // code ends
         }
 
@@ -114,9 +117,9 @@ public:
         const_iterator operator--(int)
         {
             // code begins
-            const_iterator old = *this;
-            --(*this);
-            return old;
+            const_iterator tmp = *this;
+            current = current->prev;
+            return tmp;
             // code ends
         }
 
@@ -132,7 +135,7 @@ public:
         bool operator!=(const const_iterator &rhs) const
         {
             // code begins
-            return !(*this == rhs);
+            return !((*this) == rhs);
             // code ends
         }
     };
@@ -172,7 +175,8 @@ public:
         iterator &operator++()
         {
             // code begins
-            const_iterator::current = const_iterator::current->next;
+            const_iterator* const_this = static_cast<const_iterator*>(this);
+            const_this->operator++();
             return *this;
             // code ends
         }
@@ -180,9 +184,9 @@ public:
         iterator operator++(int)
         {
             // code begins
-            iterator old = *this;
-            ++(*this);
-            return old;
+            iterator tmp = *this;
+            const_iterator::current = const_iterator::current->next;
+            return tmp;
             // code ends
         }
 
@@ -197,9 +201,9 @@ public:
         iterator operator--(int)
         {
             // code begins
-            iterator old = *this;
+            iterator tmp = *this;
             --(*this);
-            return old;
+            return tmp;
             // code ends
         }
 
@@ -280,7 +284,7 @@ public:
 
     const_iterator begin() const
     {
-        // code begins
+        // code beginsSize
         return const_iterator(head->next);
         // code ends
     }
@@ -362,9 +366,11 @@ public:
     iterator insert(iterator itr, const DataType &x)
     {
         // code begins
-        Node *p = itr.current;
+        Node *new_node = new Node{x, itr.current->prev, itr.current};
+        itr.current->prev->next = new_node;
+        itr.current->prev = new_node;
         mySize++;
-        return {p->prev = p->prev->next = new Node{x, p->prev, p}};
+        return {new_node};
         // code ends
     }
 
@@ -386,6 +392,8 @@ public:
         iterator retVal{p->next};
         p->prev->next = p->next;
         p->next->prev = p->prev;
+        p->next = nullptr;
+        p->prev = nullptr;
         delete p;
         mySize--;
         return retVal;
@@ -456,15 +464,16 @@ public:
     {
         // code begins
         Node *current = head;
-        head = tail;
-        tail = current;
         while (current != nullptr)
         {
-            Node *temp = current->prev;
-            current->prev = current->next;
-            current->next = temp;
-            current = current->prev;
+            Node *temp = current->next;
+            current->next = current->prev;
+            current->prev = temp;
+            current = temp;
         }
+        Node *temp = head;
+        head = tail;
+        tail = temp;
         // code ends
     }
 
