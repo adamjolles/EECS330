@@ -79,5 +79,6 @@ class queue {
 
 int main() {
     queue q1;
+
     return 0;
 }
