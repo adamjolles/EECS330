@@ -94,7 +94,7 @@ int main()
     int option, position, value;
     
     do {
-        cout << "what operation do you want to perform? select option number. Enter 0 to exit." << endl;
+        cout << "what operation do you want to perform? select option number. enter 0 to exit." << endl;
         cout << "1. push()" << endl;
         cout << "2. pop()" << endl;
         cout << "3. isEmpty()" << endl;

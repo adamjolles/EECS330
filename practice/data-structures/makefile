@@ -7,4 +7,4 @@ queue:
 	./queue.o
 
 clean:
-	rm a.out && rm stack.o && rm queue.o
+	rm stack.o && rm queue.o
