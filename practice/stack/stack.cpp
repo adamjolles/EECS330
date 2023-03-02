@@ -151,7 +151,7 @@ int main()
                 s1.display();
                 break;
             case 9:
-                system("cls");
+                system("clear");
                 break;
             default:
                 cout << "enter proper option number " << endl;
