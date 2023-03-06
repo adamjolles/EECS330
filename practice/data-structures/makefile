@@ -6,5 +6,9 @@ queue:
 	g++ queue.cpp -o queue.o
 	./queue.o
 
+linkedList:
+	g++ linkedList.cpp -o linkedList.o
+	./linkedlist.o
+
 clean:
-	rm stack.o && rm queue.o
+	rm *.o
