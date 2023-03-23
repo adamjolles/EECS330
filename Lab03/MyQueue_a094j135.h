@@ -8,30 +8,19 @@
 
 template <typename DataType>
 class MyQueue : private MyVector<DataType>
-{  
-  private:
+{
+private:
     size_t dataStart, dataEnd;
 
     // changes the size of the array to newSize
     void resize(size_t newSize)
     {
         // code begins
-        size_t currSize = this->size();
-        if (newSize == currSize) return;
-
-        DataType* newData = new DataType[newSize];
-
-        for (size_t i = 0; i < std::min(currSize, newSize); ++i) 
+        MyVector<DataType>::resize();
+        if (MyVector<DataType>::size == newSize)
         {
-            newData[i] = this->operator[](i);
+            dataEnd = newSize;
         }
-
-        dataStart = 0;
-        dataEnd = std::min(currSize, newSize);
-
-        delete[] this->m_data;
-        this->m_data = newData;
-        this->m_capacity = newSize;
         // code ends
     }
 
@@ -39,60 +28,40 @@ class MyQueue : private MyVector<DataType>
     void reserve(size_t newCapacity)
     {
         // code begins
-        if (newCapacity <= this->m_capacity) {
-            return;
-        }
-
-        MyVector<DataType> temp(newCapacity);
-        for (size_t i = 0; i < this->size(); ++i) {
-            temp[i] = this->operator[](i);
-        }
-
-        dataStart = 0;
-        dataEnd = size;
-        this->swap(temp);
-
+        MyVector<DataType>::reserve(newCapacity);
         // code ends
     }
 
-  public:
-
+public:
     // default constructor
     explicit MyQueue(size_t initSize = 0)
     {
         // code begins
-        if (newCapacity <= this->m_capacity) {
-            return; // no need to allocate more memory
-        }
-
-        DataType* newData = new DataType[newCapacity];
-
-        for (size_t i = 0; i < this->size(); ++i) {
-            newData[i] = this->operator[](i);
-        }
-
-        delete[] this->m_data;
-        this->m_data = newData;
-        this->m_capacity = newCapacity;
+        MyVector<DataType>::reserve(initSize + MyVector<DataType>::SPARE_CAPACITY);
+        dataStart = 0;
+        dataEnd = 0;
         // code ends
     }
 
     // copy constructor
-    MyQueue(const MyQueue & rhs)
+    MyQueue(const MyQueue &rhs)
     {
         // code begins
         dataStart = 0;
+        dataEnd = 0;
+        MyVector<DataType>::reserve(rhs.size());
+        MyVector<DataType>::insert(MyVector<DataType>::end(), rhs.begin(), rhs.end());
         dataEnd = rhs.size();
         // code ends
     }
 
     // move constructor
-    MyQueue(MyQueue && rhs)
+    MyQueue(MyQueue &&rhs)
     {
         // code begins
-        dataStart = 0;
-        dataEnd = rhs.size();
-
+        MyVector<DataType>::operator=(std::move(rhs));
+        dataStart = rhs.dataStart;
+        dataEnd = rhs.dataEnd;
         rhs.dataStart = 0;
         rhs.dataEnd = 0;
         // code ends
@@ -102,62 +71,53 @@ class MyQueue : private MyVector<DataType>
     ~MyQueue()
     {
         // code begins
-
-        // code ends
+s        // code ends
     }
 
     // copy assignment
-    MyQueue & operator= (const MyQueue & rhs)
+    MyQueue &operator=(const MyQueue &rhs)
     {
         // code begins
-        delete[] this->m_data;
+        if (this != &rhs)
+        {
+            MyVector<DataType>::operator=(rhs);
+            dataStart = rhs.dataStart;
+            dataEnd = rhs.dataEnd;
+        }
+        return *this;
         // code ends
     }
 
     // move assignment
-    MyQueue & operator= (MyQueue && rhs)
+    MyQueue &operator=(MyQueue &&rhs)
     {
         // code begins
-        if (this != &rhs) {
-            delete[] this->m_data;
-            this->m_data = rhs.m_data;
-            this->m_capacity = rhs.m_capacity;
-            this->m_size = rhs.m_size;
+        if (this != &rhs)
+        {
+            MyVector<DataType>::operator=(std::move(rhs));
             dataStart = rhs.dataStart;
             dataEnd = rhs.dataEnd;
-
-            rhs.m_data = nullptr;
-            rhs.m_capacity = 0;
-            rhs.m_size = 0;
             rhs.dataStart = 0;
             rhs.dataEnd = 0;
         }
+        return *this;
         // code ends
     }
 
     // insert x into the queue
-    void enqueue(const DataType & x)
+    void enqueue(const DataType &x)
     {
         // code begins
-        if (this->size() == this->capacity()) {
-            this->resize(this->capacity() * 2);
-        }
-
-        this->operator[](dataEnd) = x;
-        dataEnd = (dataEnd + 1) % this->capacity();
+        push_back(x);
+        ++dataEnd;
         // code ends
     }
-
     // insert x into the queue
-    void enqueue(DataType && x)
+    void enqueue(DataType &&x)
     {
         // code begins
-        if (this->size() == this->capacity()) {
-            this->resize(this->capacity() * 2);
-        }
-
-        this->operator[](dataEnd) = std::move(x);
-        dataEnd = (dataEnd + 1) % this->capacity();
+        MyVector<DataType>::push_back(x);
+        ++dataEnd;
         // code ends
     }
 
@@ -165,24 +125,24 @@ class MyQueue : private MyVector<DataType>
     void dequeue(void)
     {
         // code begins
-        if (this->empty()) {
-            return;
+        for (size_t i = 0; i < dataEnd; i++)
+        {
+            MyVector<DataType>::operator[](i) = MyVector<DataType>::operator[](i + 1);
         }
-
-        dataStart = (dataStart + 1) % this->capacity();
-        this->pop_front();
+        MyVector<DataType>::pop_back();
+        dataEnd--;
         // code ends
     }
 
     // access the first element of the queue
-    const DataType & front(void) const
+    const DataType &front(void) const
     {
         // code begins
-        if (this->empy()) {
+        if (empty())
+        {
             throw std::out_of_range("Queue is empty");
         }
-
-        return this->operator[](dataStart);
+        return (*this)[dataStart];
         // code ends
     }
 
@@ -190,7 +150,7 @@ class MyQueue : private MyVector<DataType>
     bool empty(void) const
     {
         // code begins
-        return this->size() == 0;
+        return size() == 0;
         // code ends
     }
 
@@ -198,18 +158,17 @@ class MyQueue : private MyVector<DataType>
     size_t size() const
     {
         // code begins
-        return (dataEnd - dataStart + this->capacity()) % this->capacity(
+        return dataEnd - dataStart;
         // code ends
     }
 
     // access the capacity of the queue
-    size_t capacity(void) const 
+    size_t capacity(void) const
     {
         // code begins
-        return this->m_capacity;
+        return MyVector<DataType>::capacity();
         // code ends
     }
-
 };
 
-#endif // __MYQUEUE_H__
+#endif // MYQUEUE_H

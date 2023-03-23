@@ -45,7 +45,6 @@ private:
     }
 
 public:
-
     // define the const_iterator class
     class const_iterator
     {
